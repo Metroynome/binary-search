@@ -48,14 +48,36 @@ def browse_files(entry):
     entry.delete(0, tk.END)
     entry.insert(0, ";".join(file_paths))
 
+def process_hex_sequence(hex_sequence, endian_swap):
+    """
+    Processes the hex sequence, optionally reversing the endianness and removing spaces/line breaks.
+
+    :param hex_sequence: Raw hex sequence string.
+    :param endian_swap: Boolean indicating whether to reverse endianness.
+    :return: Processed hex bytes.
+    """
+    hex_sequence = "".join(hex_sequence.split())  # Remove spaces and line breaks
+    if len(hex_sequence) % 8 != 0:
+        raise ValueError("Hex sequence length must be a multiple of 8 for 32-bit endianness swap.")
+
+    # Convert to 4-byte chunks (32-bit words)
+    chunks = [hex_sequence[i:i+8] for i in range(0, len(hex_sequence), 8)]
+
+    if endian_swap:
+        # Reverse each 4-byte chunk
+        chunks = [chunk[6:8] + chunk[4:6] + chunk[2:4] + chunk[0:2] for chunk in chunks]
+
+    return bytes.fromhex("".join(chunks))
+
 def search():
     file_paths = file_path_entry.get().split(";")
-    hex_sequence = hex_sequence_entry.get()
+    hex_sequence = hex_sequence_text.get(1.0, tk.END)
     offset = offset_entry.get()
     find_all = find_all_var.get()
+    endian_swap = endian_var.get()
 
     try:
-        search_bytes = bytes.fromhex(hex_sequence)
+        search_bytes = process_hex_sequence(hex_sequence, endian_swap)
         offset = int(offset) if offset else 0
 
         result_text.delete(1.0, tk.END)
@@ -92,7 +114,7 @@ def search():
             result_text.insert(tk.END, "#else\n")
         if ntsc_results:
             result_text.insert(tk.END, "\n".join(ntsc_results) + "\n")
-        
+
         result_text.insert(tk.END, "#endif\n")
         result_text.insert(tk.END, "};\n")
 
@@ -121,8 +143,8 @@ browse_button.grid(row=0, column=2, pady=5)
 # Hex sequence input
 hex_sequence_label = tk.Label(frame, text="Hex Sequence:")
 hex_sequence_label.grid(row=1, column=0, sticky=tk.W, pady=5)
-hex_sequence_entry = tk.Entry(frame, width=50)
-hex_sequence_entry.grid(row=1, column=1, columnspan=2, pady=5)
+hex_sequence_text = tk.Text(frame, width=50, height=5)
+hex_sequence_text.grid(row=1, column=1, columnspan=2, pady=5)
 
 # Offset input
 offset_label = tk.Label(frame, text="Offset:")
@@ -130,10 +152,17 @@ offset_label.grid(row=2, column=0, sticky=tk.W, pady=5)
 offset_entry = tk.Entry(frame, width=50)
 offset_entry.grid(row=2, column=1, columnspan=2, pady=5)
 
-# Find all checkbox
-find_all_var = tk.BooleanVar(value=True)
-find_all_checkbox = tk.Checkbutton(frame, text="Find all matches", variable=find_all_var)
-find_all_checkbox.grid(row=3, column=0, columnspan=3, pady=5)
+# Checkboxes
+checkbox_frame = tk.Frame(frame)
+checkbox_frame.grid(row=3, column=0, columnspan=3, pady=5, sticky=tk.W)
+
+endian_var = tk.BooleanVar(value=True)  # Set default to True
+endian_checkbox = tk.Checkbutton(checkbox_frame, text="Reverse Endianness", variable=endian_var)
+endian_checkbox.pack(side=tk.LEFT, padx=5)
+
+find_all_var = tk.BooleanVar(value=False)  # Set default to False
+find_all_checkbox = tk.Checkbutton(checkbox_frame, text="Find all matches", variable=find_all_var)
+find_all_checkbox.pack(side=tk.LEFT, padx=5)
 
 # Search button
 search_button = tk.Button(frame, text="Search", command=search)
