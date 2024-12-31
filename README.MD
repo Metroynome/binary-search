@@ -1,4 +1,6 @@
-#binary-search
+# binary-search
+## 100% made with ChatGPTv4.
+
 A very specific tool for a very specifig purpose for a very specific set of games.
 
 This tool was written to search through Ratchet and Clank: UYA (NTSC/PAL) files for a specific hex pattern and print the adddress of the pattern in the format of how they are needed for the `horizon-uya-patch`.
