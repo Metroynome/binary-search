@@ -54,6 +54,11 @@ def process_hex_sequence(hex_sequence, endian_swap):
 
     return bytes.fromhex("".join(chunks))
 
+def parse_offset(offset_input):
+    if offset_input.startswith("0x"):
+        return int(offset_input, 16)
+    return int(offset_input)
+
 def search():
     file_paths = file_path_entry.get().split(";")
     hex_sequence = hex_sequence_text.get(1.0, tk.END)
@@ -62,7 +67,7 @@ def search():
     endian_swap = endian_var.get()
 
     search_bytes = process_hex_sequence(hex_sequence, endian_swap)
-    offset = int(offset) if offset else 0
+    offset = parse_offset(offset) if offset else 0
 
     result_text.delete(1.0, tk.END)
 
@@ -125,7 +130,7 @@ if __name__ == "__main__":
     hex_sequence_text.grid(row=1, column=1, columnspan=2, pady=5)
 
     # Offset input
-    offset_label = tk.Label(frame, text="Offset:")
+    offset_label = tk.Label(frame, text="Offset: (+/-)")
     offset_label.grid(row=2, column=0, sticky=tk.W, pady=5)
     offset_entry = tk.Entry(frame, width=50)
     offset_entry.grid(row=2, column=1, columnspan=2, pady=5)
@@ -143,7 +148,7 @@ if __name__ == "__main__":
     find_all_checkbox.pack(side=tk.LEFT, padx=5)
 
     # Search button
-    search_button = tk.Button(frame, text="Search", command=search)
+    search_button = tk.Button(frame, text="Search", width=25, command=search)
     search_button.grid(row=4, column=0, columnspan=3, pady=10)
 
     # Results display
