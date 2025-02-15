@@ -87,7 +87,7 @@ def search():
         region = parts[0] if len(parts) > 0 else "unknown"
 
         if results:
-            formatted_results = "\n".join([f"\t.{map_name} = {address}" for address in results])
+            formatted_results = "\n".join([f"\t.{map_name} = {address}," for address in results])
             if region.lower() == "pal":
                 pal_results.append(formatted_results)
             else:
